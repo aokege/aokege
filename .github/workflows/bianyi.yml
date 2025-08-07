@@ -3,7 +3,7 @@ name: 针对多个平台进行 Rust 的 Linting 和构建
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   build-linux:
