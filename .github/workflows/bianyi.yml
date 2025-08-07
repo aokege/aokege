@@ -1,0 +1,76 @@
+name: 针对多个平台进行 Rust 的 Linting 和构建
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Run Clippy (lint)
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Build release (Linux)
+        run: cargo build --release
+
+      - name: Upload Linux binary
+        uses: actions/upload-artifact@v3
+        with:
+          name: aokege-linux
+          path: target/release/aokege
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Run Clippy (lint)
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Build release (Windows)
+        run: cargo build --release
+
+      - name: Upload Windows binary
+        uses: actions/upload-artifact@v3
+        with:
+          name: aokege-windows.exe
+          path: target/release/aokege.exe
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Run Clippy (lint)
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Build release (macOS)
+        run: cargo build --release
+
+      - name: Upload macOS binary
+        uses: actions/upload-artifact@v3
+        with:
+          name: aokege-macos
+          path: target/release/aokege
