@@ -1,4 +1,4 @@
-name: Build Rust for multiple platforms and commit binaries
+name: Rust Lint 和多平台构建
 
 on:
   push:
