@@ -16,10 +16,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install OpenSSL dev libraries and pkg-config
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libssl-dev pkg-config gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu
+     # - name: Install OpenSSL dev libraries and pkg-config
+  #      run: |
+       #   sudo apt-get update
+        #  sudo apt-get install -y libssl-dev pkg-config gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu
 
       - name: Setup Rust stable
         uses: actions-rs/toolchain@v1
@@ -40,7 +40,7 @@ jobs:
 
       - name: Build Linux ARMv7 (Raspberry Pi 32-bit)
         run: |
-          cargo build --release --target armv7-unknown-linux-gnueabihf
+          cargo build --release --target armv7-unknown-linux-gnueabihf --features vendored
           cp target/armv7-unknown-linux-gnueabihf/release/aokege $ERJINZHI_DIR/aokege-linux-armv7
 
       - name: Build Linux ARM64 (Raspberry Pi 64-bit)
