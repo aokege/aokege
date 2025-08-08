@@ -1,4 +1,4 @@
-name: Rust Lint & Build for multiple platforms including Raspberry Pi ARM
+name: 适用于多个平台的 Rust Lint & Build
 
 on:
   push:
