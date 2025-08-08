@@ -52,7 +52,7 @@ jobs:
         run: |
           git config user.name "奥科戈 CI BOT"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}
+          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}
           git add $ERJINZHI_DIR/
           git commit -m "添加 Linux 和 Windows 编译好的二进制文件到 /${ERJINZHI_DIR}" || echo "没有需要提交的更改"
           git push
