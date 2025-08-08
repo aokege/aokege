@@ -1,38 +1,24 @@
-name: 针对多个平台进行 Rust 的 Linting 和构建
+name: Rust Lint & Build for multiple platforms including Raspberry Pi ARM
 
 on:
   push:
     branches:
-      - master
+      - '**'
+
+env:
+  ERJINZHI_DIR: erjinzhi
 
 jobs:
-  build-linux:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
+  build:
+    strategy:
+      matrix:
+        platform: [linux-x86_64, linux-armv7, linux-arm64, windows-x86_64, macos-x86_64]
+    runs-on: ${{ matrix.platform == 'windows-x86_64' && 'windows-latest' || matrix.platform == 'macos-x86_64' && 'macos-latest' || 'ubuntu-latest' }}
 
-      - name: Setup Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
-
-      - name: Run Clippy (lint)
-        run: cargo clippy --all-targets --all-features -- -D warnings
-
-      - name: Build release (Linux)
-        run: cargo build --release
-
-      - name: Upload Linux binary
-        uses: actions/upload-artifact@v4
-        with:
-          name: aokege-linux
-          path: target/release/aokege
-
-  build-windows:
-    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Rust
         uses: actions-rs/toolchain@v1
@@ -40,37 +26,50 @@ jobs:
           toolchain: stable
           override: true
 
-      - name: Run Clippy (lint)
-        run: cargo clippy --all-targets --all-features -- -D warnings
+      - name: Install dependencies for cross-compiling (Linux ARM)
+        if: matrix.platform == 'linux-armv7' || matrix.platform == 'linux-arm64'
+        run: |
+          sudo apt update
+          sudo apt install -y gcc-arm-linux-gnueabihf gcc-aarch64-linux-gnu
 
-      - name: Build release (Windows)
-        run: cargo build --release
+      - name: Add Rust target for cross-compiling
+        if: matrix.platform == 'linux-armv7'
+        run: rustup target add armv7-unknown-linux-gnueabihf
 
-      - name: Upload Windows binary
-        uses: actions/upload-artifact@v4
-        with:
-          name: aokege-windows.exe
-          path: target/release/aokege.exe
-
-  build-macos:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Setup Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
+      - name: Add Rust target for cross-compiling (arm64)
+        if: matrix.platform == 'linux-arm64'
+        run: rustup target add aarch64-unknown-linux-gnu
 
       - name: Run Clippy (lint)
         run: cargo clippy --all-targets --all-features -- -D warnings
 
-      - name: Build release (macOS)
-        run: cargo build --release
+      - name: Build release binary
+        run: |
+          set -e
+          mkdir -p $ERJINZHI_DIR
 
-      - name: Upload macOS binary
+          if [ "${{ matrix.platform }}" = "linux-x86_64" ]; then
+            cargo build --release
+            cp target/release/aokege $ERJINZHI_DIR/aokege-linux-x86_64
+          elif [ "${{ matrix.platform }}" = "linux-armv7" ]; then
+            cargo build --release --target armv7-unknown-linux-gnueabihf
+            cp target/armv7-unknown-linux-gnueabihf/release/aokege $ERJINZHI_DIR/aokege-linux-armv7
+          elif [ "${{ matrix.platform }}" = "linux-arm64" ]; then
+            cargo build --release --target aarch64-unknown-linux-gnu
+            cp target/aarch64-unknown-linux-gnu/release/aokege $ERJINZHI_DIR/aokege-linux-arm64
+          elif [ "${{ matrix.platform }}" = "windows-x86_64" ]; then
+            cargo build --release
+            cp target/release/aokege.exe $ERJINZHI_DIR/aokege-windows-x86_64.exe
+          elif [ "${{ matrix.platform }}" = "macos-x86_64" ]; then
+            cargo build --release
+            cp target/release/aokege $ERJINZHI_DIR/aokege-macos-x86_64
+          else
+            echo "Unknown platform: ${{ matrix.platform }}"
+            exit 1
+          fi
+
+      - name: Upload built binary
         uses: actions/upload-artifact@v4
         with:
-          name: aokege-macos
-          path: target/release/aokege
+          name: ${{ matrix.platform }}-binary
+          path: $ERJINZHI_DIR/*
