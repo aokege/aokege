@@ -27,11 +27,12 @@ jobs:
           toolchain: stable
           override: true
 
-      - name: Add ARM targets
-        run: rustup target add armv7-unknown-linux-gnueabihf aarch64-unknown-linux-gnu
+      
+      #- name: Add ARM targets
+      # run: rustup target add armv7-unknown-linux-gnueabihf aarch64-unknown-linux-gnu
 
-      - name: Create erjinzhi folder
-        run: mkdir -p $ERJINZHI_DIR
+     #   - name: Create erjinzhi folder
+        #run: mkdir -p $ERJINZHI_DIR
 
       - name: Build Linux x86_64
         run: |
